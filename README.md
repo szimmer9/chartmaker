@@ -12,9 +12,10 @@ All set up!
 ## Using Chartmaker
 Use the script `convert.sh` to easily utilize jgraph and chartmaker:
 ```
-sh convert.sh <input file name> <output file name> <file type> <arguments>
+sh convert.sh <input file name> <output file name> <arguments>
 ```
-Currently, the only output file type supported is PDF, but PBM, PPM, and PGM will be added.
+
+This converts your input file to the specified output file and applies the arguments (outlined below). Specifying no arguments will output a chart of the same dimensions of the input file, with the same colors, and with gridlines and labels at increments of 10 across the bottom and left sides. Whatever the extension of the output file is, it will convert it to that file type. So, for example, if you specify .pdf, it will convert to PDF, and if you specify .jpg, it will convert to JPG. 
 
 ### Arguments
 The following arguments are currently supported:
@@ -28,7 +29,7 @@ The following arguments are currently planned to be added:
 * `pad X` : pads the overall image by X blocks on each edge. If used with tiling, this will pad the resulting image after the tiling and tile padding is performed.
 * `background R G B` : specifies the color of the padding blocks as an RGB value with each field ranging 0 to 255. White by default.
 
-### Using the executable directly
+### Using the executables directly
 If you want to use the executables individually, you can do that as well. Chartmaker is ran with the following arguments:
 `./chartmaker <filename> <a/p> <arguments>`
 
@@ -41,4 +42,4 @@ Chartmaker outputs the jgraph on standard out. To put this output into a file, y
 ```
 So, this converts the PPM file myfile to a jgraph file called myoutput. It will create the file myoutput.jgr if it does not exist, or if it does exist, it will overwrite it.
 
-[Please see this webpage](http://web.eecs.utk.edu/~jplank/plank/jgraph/jgraph.html) for more info on jgraph.
+[Please see this webpage](http://web.eecs.utk.edu/~jplank/plank/jgraph/jgraph.html) for more info on how to use jgraph.
