@@ -4,8 +4,6 @@
    This program generates a jgraph to create a knitting chart from an input
    PGM image file or ASCII art in a plaintext file. It outputs the 
    jgraph info onto standard output.
-
-   TODO: Takes manipulation args on stdin (can use input file)
  */
 
 #include <fstream>
@@ -15,6 +13,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <string.h>
 
 #include "../inc/queries.h"
 
@@ -27,11 +26,49 @@ struct pixel
 
     /* Update the values of the pixels */
     void set(int r, int g, int b) { red = r; green = g; blue = b; }
-
-    // TODO: make a scale function
 };
 
-// TODO: make an "arguments" struct, or a struct with all the info?
+struct arguments
+{
+    /* Tiling parameter: enable tiling and give parameters */
+    /* TODO: implement */
+    bool tile;
+    int tHoriz, tVert;
+
+    /* Enable/disable gridlines */
+    bool gridlines;
+
+    /* If spacing specified, use this number, o/w use default */
+    int gridSpacing;
+
+    /* Enable/disable gridline numbering */
+    bool numbering;
+
+    /* Enable/disable printing numbers on every tile of the grid */
+    bool allNumbers;
+
+    /* TODO: Implement */
+    /* Enable padding */
+    bool padding;
+    /* Must specify int to pad by */
+    int padSize;
+
+    /* Background color, for padding and ASCII art */
+    /* TODO: Implement */
+    pixel bgColor;
+
+    /* Function that sets to the default arguments */
+    void setDefault()
+    {
+        gridlines = true;
+        gridSpacing = 10;
+        numbering = true;
+        allNumbers = false;
+        padding = false;
+        padSize = 0;
+        bgColor.set(255, 255, 255);
+    }
+};
 
 /* Opens the PPM file specified in fn, reads in the pixels, and 
    returns a vector of pixels.
@@ -72,7 +109,6 @@ vector< vector<pixel> > openPPM(char* fn)
     numPixels = x*y;
 
     inputFile >> maxval;
-    fprintf(stderr, "maxval: %d\n", maxval);
 
     // For some reason, my PPM file was off by one? 
     inputFile.get(c);
@@ -84,20 +120,14 @@ vector< vector<pixel> > openPPM(char* fn)
         {
             /* Read in the pixel by char and normalize to 255 */
             inputFile.get(c); 
-            // fprintf(stderr, "%c ", c);
             image[i][j].red = (unsigned) c;
             inputFile.get(c); 
-            // fprintf(stderr, "%c ", c);
             image[i][j].green = (unsigned) c;
             inputFile.get(c); 
-            // fprintf(stderr, "%c\n", c);
             image[i][j].blue = (unsigned) c;
-            // inputFile >> image[i][j].red >> image[i][j].green >> image[i][j].blue;
-            // image[i][j].red *= sf;
-            // image[i][j].green *= sf;
-            // image[i][j].blue *= sf;
+
+            /* Count the total number of pixels that have been read in */
             count++;
-            fprintf(stderr, "pixel: %d %d %d\n", image[i][j].red, image[i][j].green, image[i][j].blue);
         }
     }
 
@@ -118,7 +148,7 @@ vector< vector<pixel> > openPPM(char* fn)
    returns a vector of pixels.
 */
 vector< vector<pixel> > openText(char* fn)
-// TODO: on hold until I get the first thing working
+// TODO: on hold, issue #4
 {
     ifstream inputFile;
     string line;
@@ -145,7 +175,7 @@ vector< vector<pixel> > openText(char* fn)
     }
 
     /* First, read the header and grab the size and symbols */
-    inputFile >> x >> y;
+    inputFile >> y >> x;
 
     while(inputFile >> tempSymbol)
     {
@@ -191,38 +221,76 @@ vector< vector<pixel> > openText(char* fn)
     return image;
 }
 
+// TODO: Add a manipulation function, that applies the given
+//       arguments to the image and manipulates it before writing
+//       Issue #3
+void manipulateChart(vector<vector<pixel> >& image, arguments args)
+{
+
+}
+// TODO: Add a separate function for each manipulation that needs
+//       to be applied, ie tiling, justification, padding, etc.
+
 /* Writes the chart stored in image to standard out, as a jgraph. 
  */
-void writeGraph(vector< vector<pixel> >& image)
+void writeGraph(vector< vector<pixel> >& image, arguments args)
 {
     int x = image.size(), y = image[0].size();
+    // fprintf(stderr, "x: %d y: %d\n", x, y);
     /* Coordinate of where to print the thing */
     int xbl = 0, ybl = 0, xbr = 0, ybr = 0; 
     int xtl = 0, ytl = 0, xtr = 0, ytr = 0;
     double r, g, b;
 
-    // FIXME: make labels going right to left
+    /* Call graph manipulation function */
+    // FIXME:
+
     /* Print the header info */
     printf(newGraph.c_str());
 
-    printf(xaxis.c_str(), 0, x);
+    /* X axis */
+    printf(xaxis.c_str(), 0, y);
     printf(hashOptions.c_str());
-    // Grid labels, at given increment (change from 10)
-    for(int i = 10; i <= x; i += 10)
-        printf(gridLabel.c_str(), i, i);
+    if(args.numbering && args.gridlines)
+    {
+        if(args.allNumbers)
+        {
+            /* Print a number on every line */
+            for(int i = y; i > 0; i--)
+                printf(gridLabel.c_str(), i, y-i);
+        }
+        else
+        {
+            /* Print a number on line at every increment */
+            for(int i = y - args.gridSpacing; i > 0; i-=args.gridSpacing)
+                printf(gridLabel.c_str(), i, y-i);
+        }
+    }
 
-    printf(yaxis.c_str(), 0, y);
+    /* Y axis */
+    printf(yaxis.c_str(), 0, x);
     printf(hashOptions.c_str());
-    // Grid labels, at given increment (change from 10)
-    for(int i = 10; i <= y; i += 10)
-        printf(gridLabel.c_str(), i, i);
-
+    if(args.numbering && args.gridlines)
+    {
+        if(args.allNumbers)
+        {
+            /* Print a number on every line */
+            for(int i = 1; i <= x; i++)
+                printf(gridLabel.c_str(), i, i);
+        }
+        else
+        {
+            /* Print a number on line at every increment */
+            for(int i = args.gridSpacing; i <= x; i += args.gridSpacing)
+                printf(gridLabel.c_str(), i, i);
+        }
+    }
 
     /* First coordinate */
-    ytl = y;
-    ytr = y;
-    ybr = y-1;
-    ybl = y-1;
+    ytl = x;
+    ytr = x;
+    ybr = x-1;
+    ybl = x-1;
 
     for(int i = 0; i < x; i++)
     {
@@ -253,35 +321,36 @@ void writeGraph(vector< vector<pixel> >& image)
         ybr--;
     }
 
-    // Print out bold grid lines
-    for(int i = 10; i <= y; i += 10)
-        printf(gridLine.c_str(), 0, i, x, i);
-    for(int i = 10; i <= x; i += 10)
-        printf(gridLine.c_str(), i, 0, i, y);
+    if(args.gridlines)
+    {
+        /* Print out bold gridlines */
+        for(int i = args.gridSpacing; i <= x; i += args.gridSpacing)
+            printf(gridLine.c_str(), 0, i, y, i);
+        for(int i = y - args.gridSpacing; i > 0; i-=args.gridSpacing)
+            printf(gridLine.c_str(), i, 0, i, x);
+    }
 }
 
-// TODO: Add a manipulation function, that applies the given
-//       arguments to the image and manipulates it before writing
-// TODO: Add a separate function for each manipulation that needs
-//       to be applied, ie tiling, justification, padding, etc.
-
+/* Main function */
 int main(int argc, char** argv)
 {
     /* Error and usage */
-    if(argc != 3)
+    if(argc < 3)
     {
-        fprintf(stderr, "usage: chartmaker inputfilename [a/p]\n"
+        fprintf(stderr, "usage: chartmaker inputfilename [a/p] [arguments]\n"
                "p = PPM, a = ASCII art text file\n");
         return -1;
     }
 
     vector<vector<pixel> > image;
+    arguments args;
 
     if(argv[2][0] == 'a') /* ASCII art file */
     {
-        // vector< vector<pixel> > image = openText(argv[1]);
         printf("ascii art not yet implemented!\n");
+        // FIXME:
         return 0;
+        // image = openText(argv[1]);
     }
     else if(argv[2][0] == 'p') /* PPM image file */
         image = openPPM(argv[1]);
@@ -292,6 +361,39 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    if (image.size() == 0) return -1;
-    writeGraph(image);
+    /* Check if image was actually empty */
+    if (image.size() == 0) 
+    {
+        fprintf(stderr, "Empty image\n");
+        return -1;
+    }
+    
+    /* Process arguments */
+    args.setDefault();
+
+    /* Start at 3 to skip "./chartmaker inputfilename [a/p]" */
+    for(int i = 3; i < argc; i++)
+    {
+        if(!strcmp(argv[i], "no_gridlines"))
+            args.gridlines = false;
+        else if(!strcmp(argv[i],"grid_spacing"))
+        {
+            args.gridlines = true;
+            sscanf(argv[i+1], "%d", &args.gridSpacing);
+            
+            /* Skip the next argument already read in */
+            i++;
+        }
+        else if(!strcmp(argv[i], "no_numbering"))
+        {
+            args.numbering = false;
+            args.allNumbers = false;
+        }
+        else if(!strcmp(argv[i], "all_numbers"))
+            args.allNumbers = true;
+        else /* Bad arg */
+            fprintf(stderr, "Argument %s not accepted\n", argv[i]);
+    }
+
+    writeGraph(image, args);
 }
