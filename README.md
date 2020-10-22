@@ -12,15 +12,28 @@ All set up!
 ## Using Chartmaker
 Use the script `convert.sh` to easily utilize jgraph and chartmaker:
 ```
-sh convert.sh <input file name> <output file name>
+sh convert.sh <input file name> <output file name> <file type> <arguments>
 ```
+Currently, the only output file type supported is PDF, but PBM, PPM, and PGM will be added.
+
+### Arguments
+The following arguments are currently supported:
+* `no_gridlines` : turns off bold gridlines and numbering.
+* `grid_spacing X` : specifies increment of gridlines and number labeling. The default is every 10 blocks.
+* `no_numbering` : turns off number labels along width and height. Will still print bold gridlines.
+* `all_numbers` : will print a number on every box. Not recommended for very large charts. Will still print gridlines.
+
+The following arguments are currently planned to be added:
+* `tile X Y P` : tile the input image, by the given dimensions, where X is the width and Y is the height. Third parameter P specifies how many padding blocks should occur between each tile.
+* `pad X` : pads the overall image by X blocks on each edge. If used with tiling, this will pad the resulting image after the tiling and tile padding is performed.
+* `background R G B` : specifies the color of the padding blocks as an RGB value with each field ranging 0 to 255. White by default.
 
 ### Using the executable directly
 If you want to use the executables individually, you can do that as well. Chartmaker is ran with the following arguments:
-`./chartmaker <filename> <a/p>`
+`./chartmaker <filename> <a/p> <arguments>`
 
 * filename: specifies the input file name
-* a/p: specifies PPM file or ASCII art file (ASCII art not yet implemented)
+* a/p: specifies PPM file or ASCII art file (Note: ASCII art not yet implemented)
 
 Chartmaker outputs the jgraph on standard out. To put this output into a file, you can use shell redirection and specify the name of your output file. Here's an example:
 ```
