@@ -263,7 +263,7 @@ void manipulateChart(vector<vector<pixel> >& image, arguments args)
         for(int i = 0; i < newX; i++)
             image[i].resize(newY);
 
-        for(int i = oldX-1; i > 0; i--)
+        for(int i = oldX-1; i >= 0; i--)
         {
             for(int j = oldY-1; j >= 0; j--)
             {
@@ -321,7 +321,7 @@ void writeGraph(vector< vector<pixel> >& image, arguments args)
     printf(newGraph.c_str());
 
     /* X axis */
-    printf(xaxis.c_str(), y*5/x, 0, y);
+    printf(xaxis.c_str(), y*4/x, 0, y);
     printf(hashOptions.c_str());
     if(args.numbering && args.gridlines)
     {
@@ -340,7 +340,7 @@ void writeGraph(vector< vector<pixel> >& image, arguments args)
     }
 
     /* Y axis */
-    printf(yaxis.c_str(), 5, 0, x);
+    printf(yaxis.c_str(), 4, 0, x);
     printf(hashOptions.c_str());
     if(args.numbering && args.gridlines)
     {
