@@ -2,8 +2,6 @@
    COSC 494
    Lab 3 - Jgraph
    This file contains strings to generate the jgraph.
-
-   Takes input on stdin (can use input file)
  */
 
 /* Example query:
@@ -22,16 +20,22 @@ const string newBlock = "newline poly pcfill %f %f %f "
                         "pts %d %d  %d %d  %d %d  %d %d "
                         "color 0 0 0\n";
 
+/* Required string */ 
 const string newGraph = "newgraph\n";
 
+/* Sets up chart appearance */ 
+const string hashOptions = "no_grid_lines no_draw_hash_marks no_auto_hash_labels\n";
+
+/* Sets up X and Y axis */
 const string xaxis = "xaxis min %d max %d no_draw_axis\n";
 const string yaxis = "yaxis min %d max %d no_draw_axis\n";
 
+/* Places grid label (number) at given location
+   location : label
+*/
 const string gridLabel = "\thash_label at %d : %d\n";
 
-const string hashOptions = "no_grid_lines no_draw_hash_marks no_auto_hash_labels\n";
-
-// FIXME: make it print a bold line instead of bold points?
+/* Creates a line of thickness double of default. Must specify starting and ending point. */
 const string gridLine = "newcurve marktype none linetype solid linethickness 2 pts %d %d  %d %d\n";
 
 #endif

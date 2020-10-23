@@ -31,7 +31,6 @@ struct pixel
 struct arguments
 {
     /* Tiling parameter: enable tiling and give parameters */
-    /* TODO: implement */
     bool tile;
     int tHoriz, tVert;
 
@@ -47,7 +46,6 @@ struct arguments
     /* Enable/disable printing numbers on every tile of the grid */
     bool allNumbers;
 
-    /* TODO: Implement */
     /* Enable padding */
     bool padding;
     /* Must specify int to pad by */
@@ -60,6 +58,9 @@ struct arguments
     /* Function that sets to the default arguments */
     void setDefault()
     {
+        tile = false;
+        tHoriz = 1;
+        tVert = 1;
         gridlines = true;
         gridSpacing = 10;
         numbering = true;
@@ -148,7 +149,7 @@ vector< vector<pixel> > openPPM(char* fn)
    returns a vector of pixels.
 */
 vector< vector<pixel> > openText(char* fn)
-// TODO: on hold, issue #4
+// TODO: on hold, not tested
 {
     ifstream inputFile;
     string line;
@@ -221,29 +222,100 @@ vector< vector<pixel> > openText(char* fn)
     return image;
 }
 
-// TODO: Add a manipulation function, that applies the given
-//       arguments to the image and manipulates it before writing
-//       Issue #3
+/* Manipulates the chart based on input arguments */
 void manipulateChart(vector<vector<pixel> >& image, arguments args)
 {
+    int oldX = image.size(), oldY = image[0].size();
+    int newX, newY;
 
+    /* Perform the tiling */
+    if(args.tile)
+    {
+        /* Calculate new total size */
+        newX = args.tHoriz * oldX;
+        newY = args.tVert * oldY;
+
+        image.resize(newX);
+        for(int i = 0; i < newX; i++)
+            image[i].resize(newY);
+
+        /* Tile the image */
+        /* Across the big image */
+        for(int i = 0; i < newX; i++)
+        {
+            for(int j = 0; j < newY; j++)
+            {
+                image[i][j] = image[i % oldX][j % oldY];
+            }
+        }
+
+        oldX = newX;
+        oldY = newY;
+    }
+
+    if(args.padding)
+    {
+        /* Add outer padding */
+        newX = oldX + (args.padSize*2); 
+        newY = oldY + (args.padSize*2); 
+
+        image.resize(newX);
+        for(int i = 0; i < newX; i++)
+            image[i].resize(newY);
+
+        for(int i = oldX-1; i > 0; i--)
+        {
+            for(int j = oldY-1; j >= 0; j--)
+            {
+                image[i+args.padSize][j+args.padSize] = image[i][j];
+            }
+        }
+
+        /* Do the top row */
+        for(int i = 0; i < newX; i++)
+        {
+            for(int j = 0; j < args.padSize; j++)
+                image[i][j] = args.bgColor;
+        }
+
+        /* Do the bottom row */
+        for(int i = 0; i < newX; i++)
+        {
+            for(int j = newY - args.padSize; j < newY; j++)
+                image[i][j] = args.bgColor;
+        }
+
+        /* Do the left side */
+        for(int i = 0; i < args.padSize; i++)
+        {
+            for(int j = 0; j < newY; j++)
+                image[i][j] = args.bgColor;
+        }
+
+        /* Do the right side */
+        for(int i = newX - args.padSize; i < newX; i++)
+        {
+            for(int j = 0; j < newY; j++)
+                image[i][j] = args.bgColor;
+        }
+    }
 }
-// TODO: Add a separate function for each manipulation that needs
-//       to be applied, ie tiling, justification, padding, etc.
 
 /* Writes the chart stored in image to standard out, as a jgraph. 
  */
 void writeGraph(vector< vector<pixel> >& image, arguments args)
 {
-    int x = image.size(), y = image[0].size();
-    // fprintf(stderr, "x: %d y: %d\n", x, y);
+    int x, y;
     /* Coordinate of where to print the thing */
     int xbl = 0, ybl = 0, xbr = 0, ybr = 0; 
     int xtl = 0, ytl = 0, xtr = 0, ytr = 0;
     double r, g, b;
 
     /* Call graph manipulation function */
-    // FIXME:
+    manipulateChart(image, args);
+    
+    x = image.size();
+    y = image[0].size();
 
     /* Print the header info */
     printf(newGraph.c_str());
@@ -344,11 +416,12 @@ int main(int argc, char** argv)
 
     vector<vector<pixel> > image;
     arguments args;
+    int r, g, b;
 
     if(argv[2][0] == 'a') /* ASCII art file */
     {
         printf("ascii art not yet implemented!\n");
-        // FIXME:
+        // TODO:
         return 0;
         // image = openText(argv[1]);
     }
@@ -367,7 +440,7 @@ int main(int argc, char** argv)
         fprintf(stderr, "Empty image\n");
         return -1;
     }
-    
+
     /* Process arguments */
     args.setDefault();
 
@@ -380,7 +453,7 @@ int main(int argc, char** argv)
         {
             args.gridlines = true;
             sscanf(argv[i+1], "%d", &args.gridSpacing);
-            
+
             /* Skip the next argument already read in */
             i++;
         }
@@ -391,6 +464,31 @@ int main(int argc, char** argv)
         }
         else if(!strcmp(argv[i], "all_numbers"))
             args.allNumbers = true;
+        else if(!strcmp(argv[i], "tile"))
+        {
+            args.tile = true;
+            sscanf(argv[i+1], "%d", &args.tHoriz);
+            sscanf(argv[i+2], "%d", &args.tVert);
+
+            /* Skip the next argument already read in */
+            i+=2;
+        }
+        else if(!strcmp(argv[i], "pad"))
+        {
+            args.padding = true;
+            sscanf(argv[i+1], "%d", &args.padSize);
+            i++;
+        }
+        else if(!strcmp(argv[i], "background"))
+        {
+            sscanf(argv[i+1], "%d", &r);
+            sscanf(argv[i+2], "%d", &g);
+            sscanf(argv[i+3], "%d", &b);
+            args.bgColor.red = (unsigned char) r;
+            args.bgColor.green = (unsigned char) g;
+            args.bgColor.blue = (unsigned char) b;
+            i+=3;
+        }
         else /* Bad arg */
             fprintf(stderr, "Argument %s not accepted\n", argv[i]);
     }
