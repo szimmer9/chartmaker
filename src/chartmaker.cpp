@@ -321,7 +321,7 @@ void writeGraph(vector< vector<pixel> >& image, arguments args)
     printf(newGraph.c_str());
 
     /* X axis */
-    printf(xaxis.c_str(), 0, y);
+    printf(xaxis.c_str(), y*5/x, 0, y);
     printf(hashOptions.c_str());
     if(args.numbering && args.gridlines)
     {
@@ -340,7 +340,7 @@ void writeGraph(vector< vector<pixel> >& image, arguments args)
     }
 
     /* Y axis */
-    printf(yaxis.c_str(), 0, x);
+    printf(yaxis.c_str(), 5, 0, x);
     printf(hashOptions.c_str());
     if(args.numbering && args.gridlines)
     {

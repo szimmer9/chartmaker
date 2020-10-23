@@ -27,8 +27,8 @@ const string newGraph = "newgraph\n";
 const string hashOptions = "no_grid_lines no_draw_hash_marks no_auto_hash_labels\n";
 
 /* Sets up X and Y axis */
-const string xaxis = "xaxis min %d max %d no_draw_axis\n";
-const string yaxis = "yaxis min %d max %d no_draw_axis\n";
+const string xaxis = "xaxis size %d min %d max %d no_draw_axis\n";
+const string yaxis = "yaxis size %d min %d max %d no_draw_axis\n";
 
 /* Places grid label (number) at given location
    location : label
